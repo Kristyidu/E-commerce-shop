@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Kristyidu Furniture</title>
+    <link rel="stylesheet" href="style.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/boxicons@2.1.4/css/boxicons.min.css"
+    />
+  </head>
+  <body>
+    <header>
+      <a href="#" class="logo">Kristyidu Furniture</a>
+      <div id="cart-icon">
+        <i class="bx bx-cart"></i>
+        <span class="cart-item-count">0</span>
+      </div>
+    </header>
+
+    <div class="cart">
+      <h2 class="cart-title">Cart</h2>
+      <div class="cart-content"></div>
+      <div class="total">
+        <div class="total-title">Total</div>
+        <div class="total-price">$0</div>
+      </div>
+      <button class="btn-buy">Checkout</button>
+      <button class="btn-clear">Clear Cart</button>
+      <i class="bx bx-x" id="cart-close"></i>
+    </div>
+
+    <section class="shop">
+      <h1 class="section-title">Home of Latest Furniture</h1>
+      <div class="product-content"></div>
+    </section>
+
+    <script>
+      const cartIcon = document.querySelector('#cart-icon');
+      const cart = document.querySelector('.cart');
+      const cartClose = document.querySelector('#cart-close');
+      const cartContent = document.querySelector('.cart-content');
+      const totalPriceElement = document.querySelector('.total-price');
+      const cartCount = document.querySelector('.cart-item-count');
+
+      const productList = [
+        {
+          id: 1,
+          name: 'Center Table',
+          price: 100,
+          image: 'img-cart/01_1.jpg.jpeg',
+        },
+        {
+          id: 2,
+          name: 'Inflatable Chair',
+          price: 80,
+          image: 'img-cart/02_1.jpg.jpeg',
+        },
+        {
+          id: 3,
+          name: 'Black Center Table',
+          price: 120,
+          image: 'img-cart/03_1.jpg.jpeg',
+        },
+        {
+          id: 4,
+          name: 'Side Table',
+          price: 80,
+          image: 'img-cart/04_1.jpg.jpeg',
+        },
+        {
+          id: 5,
+          name: 'White Center Table',
+          price: 150,
+          image: 'img-cart/05_1.jpg.jpeg',
+        },
+      ];
+
+      let cartItems = JSON.parse(localStorage.getItem('cart')) || [];
+
+      const renderProducts = () => {
+        const productContent = document.querySelector('.product-content');
+        productList.forEach((product) => {
+          const div = document.createElement('div');
+          div.className = 'product-box';
+          div.innerHTML = `
+          <div class="img-box">
+            <img src="${product.image}" />
+          </div>
+          <h2 class="product-title">${product.name}</h2>
+          <div class="price-and-cart">
+            <span class="price">$${product.price}</span>
+            <i class="bx bx-cart add-cart" data-id="${product.id}"></i>
+          </div>`;
+          productContent.appendChild(div);
+        });
+      };
+
+      const saveCart = () => {
+        localStorage.setItem('cart', JSON.stringify(cartItems));
+      };
+
+      const renderCart = () => {
+        cartContent.innerHTML = '';
+        cartItems.forEach((item) => {
+          const div = document.createElement('div');
+          div.className = 'cart-box';
+          div.innerHTML = `
+          <img src="${item.image}" class="cart-img" />
+          <div class="cart-detail">
+            <h2 class="cart-product-title">${item.name}</h2>
+            <span class="cart-price">$${item.price}</span>
+            <div class="cart-quantity">
+              <button class="decrement" data-id="${item.id}">-</button>
+              <span class="number">${item.quantity}</span>
+              <button class="increment" data-id="${item.id}">+</button>
+            </div>
+          </div>
+          <i class="bx bx-trash cart-remove" data-id="${item.id}"></i>
+        `;
+          cartContent.appendChild(div);
+        });
+        updateCartUI();
+      };
+
+      const updateCartUI = () => {
+        let total = 0,
+          count = 0;
+        cartItems.forEach((item) => {
+          total += item.price * item.quantity;
+          count += item.quantity;
+        });
+        totalPriceElement.textContent = `$${total}`;
+        cartCount.textContent = count;
+        cartCount.style.visibility = count > 0 ? 'visible' : 'hidden';
+      };
+
+      document.addEventListener('click', (e) => {
+        if (e.target.classList.contains('add-cart')) {
+          const id = parseInt(e.target.dataset.id);
+          const product = productList.find((p) => p.id === id);
+          const found = cartItems.find((item) => item.id === id);
+          if (found) found.quantity++;
+          else cartItems.push({ ...product, quantity: 1 });
+          saveCart();
+          renderCart();
+        }
+
+        if (e.target.classList.contains('increment')) {
+          const id = parseInt(e.target.dataset.id);
+          const item = cartItems.find((i) => i.id === id);
+          item.quantity++;
+          saveCart();
+          renderCart();
+        }
+
+        if (e.target.classList.contains('decrement')) {
+          const id = parseInt(e.target.dataset.id);
+          const item = cartItems.find((i) => i.id === id);
+          if (item.quantity > 1) item.quantity--;
+          saveCart();
+          renderCart();
+        }
+
+        if (e.target.classList.contains('cart-remove')) {
+          const id = parseInt(e.target.dataset.id);
+          cartItems = cartItems.filter((i) => i.id !== id);
+          saveCart();
+          renderCart();
+        }
+
+        if (e.target.classList.contains('btn-clear')) {
+          cartItems = [];
+          saveCart();
+          renderCart();
+        }
+      });
+
+      cartIcon.addEventListener('click', () => cart.classList.add('active'));
+      cartClose.addEventListener('click', () =>
+        cart.classList.remove('active')
+      );
+
+      renderProducts();
+      renderCart();
+    </script>
+  </body>
+</html>
